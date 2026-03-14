@@ -5,6 +5,7 @@ import static primitives.Util.isZero;
 import java.util.List;
 
 import geometries.api.Geometry;
+import geometries.impl.Plane;
 import primitives.*;
 
 /**
@@ -23,7 +24,7 @@ public class Polygon extends Geometry {
    /** Ordered list of polygon vertices */
    protected final List<Point> _vertices;
    /** Plane containing the polygon */
-   protected final Plane       _plane;
+   protected final Plane _plane;
    /** Number of vertices */
    private final int           _size;
 

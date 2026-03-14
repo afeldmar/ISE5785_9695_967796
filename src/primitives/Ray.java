@@ -31,4 +31,12 @@ public final class Ray {
     public String toString() {
         return "Ray: origin=" + origin + ", direction=" + direction;
     }
+
+    /**
+     * Returns the direction vector of the ray.
+     * @return the direction vector
+     */
+    public Vector direction() {
+        return this.direction;
+    }
 }

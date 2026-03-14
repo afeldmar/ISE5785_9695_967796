@@ -44,9 +44,9 @@ public final class Vector extends Point {
      */
     public Vector add(Vector other) {
         return new Vector(
-                this._xyz.d1 + other._xyz.d1,
-                this._xyz.d2 + other._xyz.d2,
-                this._xyz.d3 + other._xyz.d3
+                this._xyz._d1() + other._xyz._d1(),
+                this._xyz._d2() + other._xyz._d2(),
+                this._xyz._d3() + other._xyz._d3()
         );
     }
 
@@ -58,9 +58,9 @@ public final class Vector extends Point {
      */
     public Vector scale(double scalar) {
         return new Vector(
-                this._xyz.d1 * scalar,
-                this._xyz.d2 * scalar,
-                this._xyz.d3 * scalar
+                this._xyz._d1() * scalar,
+                this._xyz._d2() * scalar,
+                this._xyz._d3() * scalar
         );
     }
 
@@ -71,9 +71,9 @@ public final class Vector extends Point {
      * @return dot product
      */
     public double dotProduct(Vector other) {
-        return this._xyz.d1 * other._xyz.d1
-                + this._xyz.d2 * other._xyz.d2
-                + this._xyz.d3 * other._xyz.d3;
+        return this._xyz._d1() * other._xyz._d1()
+                + this._xyz._d2() * other._xyz._d2()
+                + this._xyz._d3() * other._xyz._d3();
     }
 
     /**
@@ -83,9 +83,9 @@ public final class Vector extends Point {
      * @return new vector which is the cross product
      */
     public Vector crossProduct(Vector other) {
-        double x = this._xyz.d2 * other._xyz.d3 - this._xyz.d3 * other._xyz.d2;
-        double y = this._xyz.d3 * other._xyz.d1 - this._xyz.d1 * other._xyz.d3;
-        double z = this._xyz.d1 * other._xyz.d2 - this._xyz.d2 * other._xyz.d1;
+        double x = this._xyz._d2() * other._xyz._d3() - this._xyz._d3() * other._xyz._d2();
+        double y = this._xyz._d3() * other._xyz._d1() - this._xyz._d1() * other._xyz._d3();
+        double z = this._xyz._d1() * other._xyz._d2() - this._xyz._d2() * other._xyz._d1();
 
         return new Vector(x, y, z);
     }
@@ -96,9 +96,9 @@ public final class Vector extends Point {
      * @return squared length
      */
     public double lengthSquared() {
-        return this._xyz.d1 * this._xyz.d1
-                + this._xyz.d2 * this._xyz.d2
-                + this._xyz.d3 * this._xyz.d3;
+        return this._xyz._d1() * this._xyz._d1()
+                + this._xyz._d2() * this._xyz._d2()
+                + this._xyz._d3() * this._xyz._d3();
     }
 
     /**
@@ -117,9 +117,9 @@ public final class Vector extends Point {
      * @return squared distance
      */
     public double distanceSquared(Vector other) {
-        double dx = this._xyz.d1 - other._xyz.d1;
-        double dy = this._xyz.d2 - other._xyz.d2;
-        double dz = this._xyz.d3 - other._xyz.d3;
+        double dx = this._xyz._d1() - other._xyz._d1();
+        double dy = this._xyz._d2() - other._xyz._d2();
+        double dz = this._xyz._d3() - other._xyz._d3();
 
         return dx * dx + dy * dy + dz * dz;
     }
@@ -143,9 +143,9 @@ public final class Vector extends Point {
         double len = length();
 
         return new Vector(
-                this._xyz.d1 / len,
-                this._xyz.d2 / len,
-                this._xyz.d3 / len
+                this._xyz._d1() / len,
+                this._xyz._d2() / len,
+                this._xyz._d3() / len
         );
     }
 
@@ -160,4 +160,6 @@ public final class Vector extends Point {
     public String toString() {
         return "Vector" + _xyz;
     }
+
+    public static final Vector AXIS_Z = new Vector(0, 0, 1);
 }

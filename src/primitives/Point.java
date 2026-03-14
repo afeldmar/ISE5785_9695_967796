@@ -43,9 +43,9 @@ public class Point {
      */
     public Vector subtract(Point other) {
         return new Vector(
-                this._xyz.d1 - other._xyz.d1,
-                this._xyz.d2 - other._xyz.d2,
-                this._xyz.d3 - other._xyz.d3
+                this._xyz._d1() - other._xyz._d1(),
+                this._xyz._d2() - other._xyz._d2(),
+                this._xyz._d3() - other._xyz._d3()
         );
     }
 
@@ -57,9 +57,9 @@ public class Point {
      */
     public Point add(Vector vector) {
         return new Point(
-                this._xyz.d1 + vector._xyz.d1,
-                this._xyz.d2 + vector._xyz.d2,
-                this._xyz.d3 + vector._xyz.d3
+                this._xyz._d1() + vector._xyz._d1(),
+                this._xyz._d2() + vector._xyz._d2(),
+                this._xyz._d3() + vector._xyz._d3()
         );
     }
 
@@ -70,9 +70,9 @@ public class Point {
      * @return squared distance
      */
     public double distanceSquared(Point other) {
-        double dx = this._xyz.d1 - other._xyz.d1;
-        double dy = this._xyz.d2 - other._xyz.d2;
-        double dz = this._xyz.d3 - other._xyz.d3;
+        double dx = this._xyz._d1() - other._xyz._d1();
+        double dy = this._xyz._d2() - other._xyz._d2();
+        double dz = this._xyz._d3() - other._xyz._d3();
 
         return dx * dx + dy * dy + dz * dz;
     }
