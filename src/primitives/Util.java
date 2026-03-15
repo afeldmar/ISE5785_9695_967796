@@ -48,7 +48,6 @@ public final class Util {
     * </pre>
     * 
     * where the stored exponent is biased by 1023.
-    * </p>
     * @param  num the number
     * @return     the unbiased exponent
     */

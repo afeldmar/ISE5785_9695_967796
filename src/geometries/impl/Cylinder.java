@@ -9,11 +9,12 @@ import primitives.Vector;
  */
 public class Cylinder extends Tube {
 
+    /** The height of the cylinder */
     private final double height;
 
     /**
      * Constructor for Cylinder.
-     * * @param radius the radius of the cylinder
+     * @param radius the radius of the cylinder
      * @param axis the central axis ray of the cylinder
      * @param height the height of the cylinder
      */
