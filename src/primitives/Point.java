@@ -41,12 +41,9 @@ public class Point {
      * @param other other point
      * @return vector from other point to this point
      */
+
     public Vector subtract(Point other) {
-        return new Vector(
-                this._xyz._d1() - other._xyz._d1(),
-                this._xyz._d2() - other._xyz._d2(),
-                this._xyz._d3() - other._xyz._d3()
-        );
+        return new Vector(this._xyz.subtract(other._xyz));
     }
 
     /**
@@ -56,11 +53,7 @@ public class Point {
      * @return new point after addition
      */
     public Point add(Vector vector) {
-        return new Point(
-                this._xyz._d1() + vector._xyz._d1(),
-                this._xyz._d2() + vector._xyz._d2(),
-                this._xyz._d3() + vector._xyz._d3()
-        );
+        return new Point(this._xyz.add(vector._xyz));
     }
 
     /**

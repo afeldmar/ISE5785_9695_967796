@@ -7,6 +7,20 @@ package primitives;
 public final class Vector extends Point {
 
     /**
+     * Unit vector in X axis direction.
+     */
+    public static final Vector AXIS_X = new Vector(1, 0, 0);
+
+    /**
+     * Unit vector in Y axis direction.
+     */
+    public static final Vector AXIS_Y = new Vector(0, 1, 0);
+
+    /**
+     * Unit vector in Z axis direction.
+     */
+    public static final Vector AXIS_Z = new Vector(0, 0, 1);
+    /**
      * Constructor from three coordinates.
      *
      * @param x first coordinate
@@ -43,11 +57,7 @@ public final class Vector extends Point {
      * @return new vector which is the sum
      */
     public Vector add(Vector other) {
-        return new Vector(
-                this._xyz._d1() + other._xyz._d1(),
-                this._xyz._d2() + other._xyz._d2(),
-                this._xyz._d3() + other._xyz._d3()
-        );
+        return new Vector(this._xyz.add(other._xyz));
     }
 
     /**
@@ -57,11 +67,7 @@ public final class Vector extends Point {
      * @return new scaled vector
      */
     public Vector scale(double scalar) {
-        return new Vector(
-                this._xyz._d1() * scalar,
-                this._xyz._d2() * scalar,
-                this._xyz._d3() * scalar
-        );
+        return new Vector(this._xyz.scale(scalar));
     }
 
     /**
@@ -110,29 +116,6 @@ public final class Vector extends Point {
         return Math.sqrt(lengthSquared());
     }
 
-    /**
-     * Calculates squared distance between this vector and another vector.
-     *
-     * @param other other vector
-     * @return squared distance
-     */
-    public double distanceSquared(Vector other) {
-        double dx = this._xyz._d1() - other._xyz._d1();
-        double dy = this._xyz._d2() - other._xyz._d2();
-        double dz = this._xyz._d3() - other._xyz._d3();
-
-        return dx * dx + dy * dy + dz * dz;
-    }
-
-    /**
-     * Calculates distance between this vector and another vector.
-     *
-     * @param other other vector
-     * @return distance
-     */
-    public double distance(Vector other) {
-        return Math.sqrt(distanceSquared(other));
-    }
 
     /**
      * Returns normalized vector.
@@ -140,13 +123,7 @@ public final class Vector extends Point {
      * @return new normalized vector
      */
     public Vector normalize() {
-        double len = length();
-
-        return new Vector(
-                this._xyz._d1() / len,
-                this._xyz._d2() / len,
-                this._xyz._d3() / len
-        );
+        return new Vector(this._xyz.divide(length()));
     }
 
     @Override
@@ -161,5 +138,4 @@ public final class Vector extends Point {
         return "Vector" + _xyz;
     }
 
-    public static final Vector AXIS_Z = new Vector(0, 0, 1);
 }

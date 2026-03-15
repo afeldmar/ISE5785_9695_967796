@@ -5,8 +5,15 @@ package primitives;
  */
 public final class Ray {
 
-    private final Point origin;
-    private final Vector direction;
+    /**
+     * Starting point of the ray.
+     */
+    private final Point _origin;
+
+    /**
+     * Direction vector of the ray.
+     */
+    private final Vector _direction;
 
     /**
      * Constructor for Ray.
@@ -15,8 +22,26 @@ public final class Ray {
      * @param direction ray direction
      */
     public Ray(Point origin, Vector direction) {
-        this.origin = origin;
-        this.direction = direction.normalize();
+        this._origin = origin;
+        this._direction = direction.normalize();
+    }
+
+    /**
+     * Returns the origin point of the ray.
+     *
+     * @return the origin point
+     */
+    public Point origin() {
+        return this._origin;
+    }
+
+    /**
+     * Returns the direction vector of the ray.
+     *
+     * @return the direction vector
+     */
+    public Vector direction() {
+        return this._direction;
     }
 
     @Override
@@ -24,19 +49,12 @@ public final class Ray {
         if (this == obj) {return true;}
         if (!(obj instanceof Ray)) {return false;}
         Ray other = (Ray) obj;
-        return this.origin.equals(other.origin) &&
-                this.direction.equals(other.direction);}
+        return this._origin.equals(other._origin)
+                && this._direction.equals(other._direction);
+    }
 
     @Override
     public String toString() {
-        return "Ray: origin=" + origin + ", direction=" + direction;
-    }
-
-    /**
-     * Returns the direction vector of the ray.
-     * @return the direction vector
-     */
-    public Vector direction() {
-        return this.direction;
+        return "Ray: origin=" + _origin + ", direction=" + _direction;
     }
 }
