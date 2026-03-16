@@ -1,11 +1,10 @@
-package geometries;
+package geometries.impl;
 
 import static primitives.Util.isZero;
 
 import java.util.List;
 
 import geometries.api.Geometry;
-import geometries.impl.Plane;
 import primitives.*;
 
 /**

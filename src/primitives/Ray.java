@@ -57,4 +57,10 @@ public final class Ray {
     public String toString() {
         return "Ray: origin=" + _origin + ", direction=" + _direction;
     }
+
+    /*
+    @Override
+    public int hashCode() {
+        return Objects.hash(_origin, _direction);
+    } */
 }

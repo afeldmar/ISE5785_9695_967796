@@ -5,7 +5,6 @@ import static primitives.Util.isZero;
 
 import primitives.*;
 import geometries.impl.*;
-import geometries.*;
 
 
 /**

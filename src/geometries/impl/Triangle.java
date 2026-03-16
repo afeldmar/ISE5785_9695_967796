@@ -1,6 +1,5 @@
 package geometries.impl;
 
-import geometries.Polygon;
 import primitives.Point;
 
 /**

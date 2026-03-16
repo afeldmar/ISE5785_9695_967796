@@ -92,4 +92,9 @@ public class Point {
     public String toString() {
         return "Point" + _xyz;
     }
+
+    @Override
+    public int hashCode() {
+        return _xyz.hashCode();
+    }
 }
