@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
  */
 class RayTests {
 
+    /** Default constructor to satisfy JavaDoc generator */
+    RayTests() {}
+
     /** Delta value for accuracy when comparing double values. */
     private static final double DELTA = 1e-6;
 

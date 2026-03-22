@@ -26,6 +26,7 @@ import primitives.Vector;
  * Equivalence Partitions (EP) and Boundary Values (BVA).
  */
 class PolygonTests {
+
     /** Default constructor to satisfy JavaDoc generator */
     PolygonTests() { /* to satisfy JavaDoc generator */ }
 

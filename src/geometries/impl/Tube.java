@@ -10,7 +10,7 @@ import primitives.Vector;
 public class Tube extends RadialGeometry {
 
     /** The axis ray of the tube */
-    private final Ray axis;
+    protected final Ray axis;
 
     /**
      * Constructor for Tube.

@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
  */
 class VectorTests {
 
+    /** Default constructor to satisfy JavaDoc generator */
+    VectorTests() {}
+
     /** Delta value for accuracy when comparing double values. */
     private static final double DELTA = 1e-6;
 
@@ -17,6 +20,23 @@ class VectorTests {
     private static final Vector v2 = new Vector(-2, -4, -6);
     /** Vector (0, 3, -2) orthogonal to v1 */
     private static final Vector v3 = new Vector(0, 3, -2);
+
+    /**
+     * Test method for {@link primitives.Vector#Vector(double, double, double)}.
+     * Verifies correct and incorrect vector constructions.
+     */
+    @Test
+    void testConstructor() {
+        // ============ Equivalence Partitions Tests ==============
+        // EP01: Correct vector creation
+        assertDoesNotThrow(() -> new Vector(1, 2, 3),
+                "Failed constructing a correct vector");
+
+        // =============== Boundary Values Tests ==================
+        // BV01: Creating a zero vector (should throw exception)
+        assertThrows(IllegalArgumentException.class, () -> new Vector(0, 0, 0),
+                "Constructed a zero vector which is illegal");
+    }
 
     /**
      * Test method for {@link primitives.Vector#add(primitives.Vector)}.

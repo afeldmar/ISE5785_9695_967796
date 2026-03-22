@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
  */
 class PointTests {
 
+    /** Default constructor to satisfy JavaDoc generator */
+    PointTests() {}
+
     /** Delta value for accuracy when comparing double values. */
     private static final double DELTA = 1e-6;
 

@@ -27,7 +27,7 @@ class PlaneTests {
     /** Second reference point on the plane z = 1. */
     private static final Point POINT2 = new Point(1, 0, 1);
 
-    /** Third reference poinAt on the plane z = 1. */
+    /** Third reference point on the plane z = 1. */
     private static final Point POINT3 = new Point(0, 1, 1);
 
     /** Additional point on the plane z = 1. */
