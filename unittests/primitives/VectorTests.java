@@ -39,6 +39,23 @@ class VectorTests {
     }
 
     /**
+     * Test method for {@link primitives.Vector#Vector(primitives.Double3)}.
+     * Verifies correct and incorrect vector constructions using Double3.
+     */
+    @Test
+    void testConstructorDouble3() {
+        // ============ Equivalence Partitions Tests ==============
+        // EP01: Correct vector creation using Double3
+        assertDoesNotThrow(() -> new Vector(new Double3(1, 2, 3)),
+                "Failed constructing a correct vector using Double3");
+
+        // =============== Boundary Values Tests ==================
+        // BV01: Creating a zero vector using Double3 (should throw exception)
+        assertThrows(IllegalArgumentException.class, () -> new Vector(new Double3(0, 0, 0)),
+                "Constructed a zero vector using Double3 which is illegal");
+    }
+
+    /**
      * Test method for {@link primitives.Vector#add(primitives.Vector)}.
      */
     @Test
