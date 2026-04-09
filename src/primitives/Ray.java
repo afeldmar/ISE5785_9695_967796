@@ -1,5 +1,7 @@
 package primitives;
 
+import static primitives.Util.*;
+
 /**
  * Class Ray represents a ray in 3D Cartesian coordinate system.
  */
@@ -56,6 +58,19 @@ public final class Ray {
     @Override
     public String toString() {
         return "Ray: origin=" + _origin + ", direction=" + _direction;
+    }
+
+    /**
+     * Calculates a point on the ray at a given distance from the head of the ray.
+     *
+     * @param t the distance from the head of the ray
+     * @return the calculated point
+     */
+    public Point getPoint(double t) {
+        if (isZero(t)) {
+            return _origin;
+        }
+        return _origin.add(_direction.scale(t));
     }
 
     /*

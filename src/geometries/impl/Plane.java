@@ -2,7 +2,9 @@ package geometries.impl;
 
 import geometries.api.Geometry;
 import primitives.Point;
+import primitives.Ray;
 import primitives.Vector;
+import java.util.List;
 
 /**
  * Represents a plane in 3D Cartesian coordinate system.
@@ -45,5 +47,10 @@ public class Plane extends Geometry {
     @Override
     public Vector getNormal(Point point) {
         return this._normal;
+    }
+
+    @Override
+    public List<Point> findIntersections(Ray ray) {
+        return null;
     }
 }

@@ -51,4 +51,26 @@ class RayTests {
         assertEquals(1d, ray2.direction().length(), DELTA,
                 "ERROR: Ray direction should remain a unit vector");
     }
+
+    /**
+     * Test method for {@link primitives.Ray#getPoint(double)}.
+     */
+    @Test
+    void testGetPoint() {
+        Ray ray = new Ray(new Point(1, 0, 0), new Vector(1, 0, 0));
+
+        // ============ Equivalence Partitions Tests ==============
+        // EP01: Positive distance (t > 0)
+        assertEquals(new Point(2, 0, 0), ray.getPoint(1),
+                "Wrong point for positive distance");
+
+        // EP02: Negative distance (t < 0)
+        assertEquals(new Point(0, 0, 0), ray.getPoint(-1),
+                "Wrong point for negative distance");
+
+        // =============== Boundary Values Tests ==================
+        // BV01: Zero distance (t = 0)
+        assertEquals(new Point(1, 0, 0), ray.getPoint(0),
+                "Wrong point for zero distance");
+    }
 }
