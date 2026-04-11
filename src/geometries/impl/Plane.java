@@ -6,6 +6,9 @@ import primitives.Ray;
 import primitives.Vector;
 import java.util.List;
 
+import static primitives.Util.alignZero;
+import static primitives.Util.isZero;
+
 /**
  * Represents a plane in 3D Cartesian coordinate system.
  */
@@ -51,6 +54,24 @@ public class Plane extends Geometry {
 
     @Override
     public List<Point> findIntersections(Ray ray) {
-        return null;
+        Point p0 = ray.origin();
+        Vector v = ray.direction();
+
+        double nv = alignZero(_normal.dotProduct(v));
+
+        // no intersection - the ray is parallel to the plane
+        if (isZero(nv)) {
+            return null;
+        }
+
+        // ray starts at the plane reference point
+        if (_point.equals(p0)) {
+            return null;
+        }
+
+        double t = alignZero(_normal.dotProduct(_point.subtract(p0)) / nv);
+
+        // there is intersection only if it is in the direction of the ray
+        return t <= 0 ? null : List.of(ray.getPoint(t));
     }
 }
