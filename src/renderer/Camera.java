@@ -33,7 +33,20 @@ public class Camera implements Cloneable {
     }
 
     public Ray constructRay(int xIndex, int yIndex) {
-        return null;
+        Point pIJ = vpCenter;
+
+        double xJ = (xIndex - (nX - 1) / 2d) * pixelWidth;
+        double yI = -(yIndex - (nY - 1) / 2d) * pixelHeight;
+
+        if (xJ != 0) {
+            pIJ = pIJ.add(vRight.scale(xJ));
+        }
+
+        if (yI != 0) {
+            pIJ = pIJ.add(vUp.scale(yI));
+        }
+
+        return new Ray(p0, pIJ.subtract(p0));
     }
 
     /**
@@ -99,8 +112,10 @@ public class Camera implements Cloneable {
         }
 
         private void checkLocationAndDirection() {
-            if (camera.p0 == null) throw new MissingResourceException("Missing location", "Camera", "p0");
-            if (bUp == null) throw new MissingResourceException("Missing up vector", "Camera", "vUp");
+            if (camera.p0 == null)
+                throw new MissingResourceException("Missing location", "Camera", "p0");
+            if (bUp == null)
+                throw new MissingResourceException("Missing up vector", "Camera", "vUp");
             if (bTo == null && bTarget == null)
                 throw new MissingResourceException("Missing direction", "Camera", "vTo");
 
