@@ -1,8 +1,11 @@
 package renderer;
 
+import primitives.Color;
 import primitives.Point;
 import primitives.Ray;
 import primitives.Vector;
+import scene.Scene;
+
 import java.util.MissingResourceException;
 
 /**
@@ -26,6 +29,10 @@ public class Camera implements Cloneable {
     private double pixelWidth;
     private double pixelHeight;
 
+    // ===== Stage 5 additions =====
+    private ImageWriter imageWriter;
+    private RayTracerBase rayTracer;
+
     private Camera() {}
 
     public static Builder getBuilder() {
@@ -47,6 +54,64 @@ public class Camera implements Cloneable {
         }
 
         return new Ray(p0, pIJ.subtract(p0));
+    }
+
+    /**
+     * Renders the image by casting rays through all pixels.
+     *
+     * @return this camera
+     */
+    public Camera renderImage() {
+        for (int yIndex = 0; yIndex < nY; yIndex++) {
+            for (int xIndex = 0; xIndex < nX; xIndex++) {
+                castRay(xIndex, yIndex);
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     * Casts one ray through one pixel and writes its color.
+     *
+     * @param xIndex pixel column
+     * @param yIndex pixel row
+     */
+    private void castRay(int xIndex, int yIndex) {
+        Ray ray = constructRay(xIndex, yIndex);
+        Color color = rayTracer.traceRay(ray);
+
+        imageWriter.writePixel(xIndex, yIndex, color);
+    }
+
+    /**
+     * Prints a grid over the rendered image.
+     *
+     * @param interval grid interval
+     * @param color grid color
+     * @return this camera
+     */
+    public Camera printGrid(int interval, Color color) {
+        for (int yIndex = 0; yIndex < nY; yIndex++) {
+            for (int xIndex = 0; xIndex < nX; xIndex++) {
+                if (xIndex % interval == 0 || yIndex % interval == 0) {
+                    imageWriter.writePixel(xIndex, yIndex, color);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     * Writes the image to the images folder.
+     *
+     * @param fileName output file name without .png
+     * @return this camera
+     */
+    public Camera writeToImage(String fileName) {
+        imageWriter.writeToImage(fileName);
+        return this;
     }
 
     /**
@@ -106,9 +171,27 @@ public class Camera implements Cloneable {
             return this;
         }
 
+        /**
+         * Sets the ray tracer for the camera.
+         *
+         * @param scene the scene to render
+         * @param type ray tracer type
+         * @return this builder
+         */
+        public Builder setRayTracer(Scene scene, RayTracerType type) {
+            if (type == RayTracerType.SIMPLE) {
+                camera.rayTracer = new SimpleRayTracer(scene);
+                return this;
+            }
+
+            throw new IllegalArgumentException("Unsupported ray tracer type: " + type);
+        }
+
         private void checkResolution() {
             if (camera.nX <= 0 || camera.nY <= 0)
                 throw new IllegalArgumentException("Resolution dimensions must be strictly positive");
+
+            camera.imageWriter = new ImageWriter(camera.nX, camera.nY);
         }
 
         private void checkLocationAndDirection() {
@@ -147,6 +230,10 @@ public class Camera implements Cloneable {
             checkResolution();
             checkLocationAndDirection();
             checkViewPlane();
+
+            if (camera.rayTracer == null) {
+                setRayTracer(new Scene("test"), RayTracerType.SIMPLE);
+            }
 
             try {
                 return (Camera) camera.clone();

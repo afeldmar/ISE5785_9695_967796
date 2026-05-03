@@ -1,5 +1,7 @@
 package primitives;
 
+import java.util.List;
+
 import static primitives.Util.*;
 
 /**
@@ -48,9 +50,16 @@ public final class Ray {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {return true;}
-        if (!(obj instanceof Ray)) {return false;}
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof Ray)) {
+            return false;
+        }
+
         Ray other = (Ray) obj;
+
         return this._origin.equals(other._origin)
                 && this._direction.equals(other._direction);
     }
@@ -70,12 +79,40 @@ public final class Ray {
         if (isZero(t)) {
             return _origin;
         }
+
         return _origin.add(_direction.scale(t));
+    }
+
+    /**
+     * Finds the closest point to the ray origin from a list of points.
+     *
+     * @param points list of intersection points
+     * @return the closest point to the ray origin, or null if the list is null
+     */
+    public Point findClosestPoint(List<Point> points) {
+        if (points == null) {
+            return null;
+        }
+
+        Point closestPoint = null;
+        double closestDistanceSquared = Double.POSITIVE_INFINITY;
+
+        for (Point point : points) {
+            double distanceSquared = point.distanceSquared(_origin);
+
+            if (distanceSquared < closestDistanceSquared) {
+                closestDistanceSquared = distanceSquared;
+                closestPoint = point;
+            }
+        }
+
+        return closestPoint;
     }
 
     /*
     @Override
     public int hashCode() {
         return Objects.hash(_origin, _direction);
-    } */
+    }
+    */
 }
