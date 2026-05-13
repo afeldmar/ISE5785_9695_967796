@@ -44,10 +44,9 @@ class SimpleRayTracer extends RayTracerBase {
     Color traceRay(Ray ray) {
         List<Point> intersections = scene.geometries.findIntersections(ray);
 
-        Point closestPoint = ray.findClosestPoint(intersections);
 
-        return closestPoint == null
+        return intersections == null
                 ? scene.background
-                : calcColor(closestPoint);
+                : calcColor(ray.findClosestPoint(intersections));
     }
 }
