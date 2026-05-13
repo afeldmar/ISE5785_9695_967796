@@ -1,18 +1,82 @@
 package geometries.api;
 
-import java.util.List;
 import primitives.Point;
 import primitives.Ray;
+import java.util.List;
 
-/**
- * Interface/Abstract class for all geometries that can be intersected by a Ray.
- */
 public abstract class Intersectable {
 
     /**
-     * Finds intersections of a ray with geometric objects.
-     * * @param ray the ray intersecting the geometry
-     * @return list of intersection points
+     * Passive Data Structure (PDS) representing an intersection point and the geometry it belongs to.
      */
-    public abstract List<Point> findIntersections(Ray ray);
+    public static class Intersection {
+        /** The geometry that was intersected */
+        public final Geometry geometry;
+        /** The intersection point in 3D space */
+        public final Point point;
+
+        /**
+         * Constructs an Intersection object.
+         *
+         * @param geometry the intersected geometry
+         * @param point    the point of intersection
+         */
+        public Intersection(Geometry geometry, Point point) {
+            this.geometry = geometry;
+            this.point = point;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj instanceof Intersection other) {
+                // Note: Geometry comparison is by reference (==), point comparison is by equals()
+                return this.geometry == other.geometry && this.point.equals(other.point);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "Intersection{" +
+                    "geometry=" + geometry +
+                    ", point=" + point +
+                    '}';
+        }
+    }
+
+    /**
+     * Finds all intersections of a ray with the geometry.
+     * Preserves backward compatibility by returning a list of Points.
+     *
+     * @param ray the intersecting ray
+     * @return a list of intersection points, or null if no intersections are found
+     */
+    public final List<Point> findIntersections(Ray ray) {
+        var intersections = calcIntersections(ray);
+        return intersections == null ? null
+                : intersections.stream()
+                .map(intersection -> intersection.point)
+                .toList();
+    }
+
+    /**
+     * Calculates the intersections of a ray with the geometry, including the geometry object itself.
+     * This public final method implements the NVI (Non-Virtual Interface) pattern.
+     *
+     * @param ray the intersecting ray
+     * @return a list of Intersection objects, or null if no intersections
+     */
+    public final List<Intersection> calcIntersections(Ray ray) {
+        return calcIntersectionsHelper(ray);
+    }
+
+    /**
+     * Helper method to calculate intersections.
+     * Must be implemented by all concrete geometries.
+     *
+     * @param ray the intersecting ray
+     * @return a list of Intersection objects, or null if no intersections
+     */
+    protected abstract List<Intersection> calcIntersectionsHelper(Ray ray);
 }

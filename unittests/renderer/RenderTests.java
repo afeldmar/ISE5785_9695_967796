@@ -107,14 +107,18 @@ class RenderTests {
 
     /**
      * Renders a scene loaded from an XML file.
+     * <p>
+     * Note: parsing logic is delegated to the SceneXmlParser class.
      *
-     * @param builder the camera builder to use
-     * @param xmlName the XML scene file name
-     * @return the camera after rendering
+     * @param  builder the camera builder to use
+     * @param  xmlName the XML scene file name (without the .xml extension)
+     * @return         the camera after rendering the image
      */
     Camera renderSceneXML(Camera.Builder builder, String xmlName) {
-        Scene scene = new Scene("Using XML");
+        // Parse the XML file into a Scene object using the dedicated parser
+        Scene scene = parser.SceneXmlParser.parse("Using XML", "xml/" + xmlName + ".xml");
 
+        // Configure the camera and render the image
         return builder
                 .setRayTracer(scene, RayTracerType.SIMPLE)
                 .build()

@@ -24,15 +24,15 @@ public class Triangle extends Polygon {
     }
 
     /**
-     * Finds the intersection points between the given ray and this triangle using
+     * Calculates the intersections between the given ray and this triangle using
      * the Möller-Trumbore intersection algorithm.
      * Intersections that fall exactly on the edges or vertices are not included.
      *
      * @param ray the ray intersecting the triangle
-     * @return a list containing the intersection point, or null if there is no valid intersection
+     * @return a list containing the intersection object, or null if there is no valid intersection
      */
     @Override
-    public List<Point> findIntersections(Ray ray) {
+    protected List<Intersection> calcIntersectionsHelper(Ray ray) {
         Point p0 = ray.origin();
         Vector v = ray.direction();
 
@@ -86,7 +86,7 @@ public class Triangle extends Polygon {
             return null;
         }
 
-        // Valid intersection found! Return the point
-        return List.of(ray.getPoint(t));
+        // Valid intersection found! Return the intersection wrapped with 'this'
+        return List.of(new Intersection(this, ray.getPoint(t)));
     }
 }
