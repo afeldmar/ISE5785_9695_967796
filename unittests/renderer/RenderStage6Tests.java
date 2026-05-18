@@ -123,9 +123,9 @@ class RenderStage6Tests {
       Scene scene = new Scene("Ambient colors").setAmbientLight(new AmbientLight(new Color(WHITE)));
       scene.geometries //
          .add(_sphere.setMaterial(new Material().setKA(0.2)),
-              _triangleLeftTop.setMaterial(new Material().setKA(new Double3(0, 1, 0))),
-              _triangleLeftBottom.setMaterial(new Material().setKA(new Double3(1, 0, 0))),
-              _triangleRightBottom.setMaterial(new Material().setKA(new Double3(0, 0, 1)))
+              _triangleLeftTop.setMaterial(new Material().setKA(new Double3(0, 0.6, 0))),
+              _triangleLeftBottom.setMaterial(new Material().setKA(new Double3(0.6, 0, 0))),
+              _triangleRightBottom.setMaterial(new Material().setKA(new Double3(0, 0, 0.6)))
          );
       createImage(scene, "ambient render test");
    }
