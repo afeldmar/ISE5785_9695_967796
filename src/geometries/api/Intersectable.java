@@ -1,5 +1,7 @@
 package geometries.api;
 
+import primitives.Color;
+import primitives.Material;
 import primitives.Point;
 import primitives.Ray;
 import java.util.List;
@@ -14,6 +16,10 @@ public abstract class Intersectable {
         public final Geometry geometry;
         /** The intersection point in 3D space */
         public final Point point;
+        /** The emission color of the intersected geometry */
+        public final Color emission;
+        /** The material of the intersected geometry */
+        public final Material material;
 
         /**
          * Constructs an Intersection object.
@@ -24,6 +30,8 @@ public abstract class Intersectable {
         public Intersection(Geometry geometry, Point point) {
             this.geometry = geometry;
             this.point = point;
+            this.emission = geometry == null ? Color.BLACK : geometry.getEmission();
+            this.material = geometry == null ? new Material() : geometry.getMaterial();
         }
 
         @Override
