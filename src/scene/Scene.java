@@ -3,6 +3,7 @@ package scene;
 import geometries.impl.Geometries;
 import lighting.AmbientLight;
 import primitives.Color;
+import java.util.List;
 
 /**
  * Represents a 3D scene containing geometries, background color, and ambient lighting.
@@ -17,6 +18,9 @@ public class Scene {
 
     /** The ambient lighting of the scene */
     public AmbientLight ambientLight = AmbientLight.NONE;
+
+    /** List of all external light sources in the scene */
+    public List<lighting.LightSource> lights = new java.util.LinkedList<>();
 
     /** The collection of 3D geometric shapes in the scene */
     public Geometries geometries = new Geometries();

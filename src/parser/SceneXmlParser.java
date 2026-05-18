@@ -1,5 +1,6 @@
 package parser;
 
+import geometries.api.Geometry;
 import geometries.impl.Sphere;
 import geometries.impl.Triangle;
 import lighting.AmbientLight;
@@ -17,6 +18,7 @@ import java.io.File;
 
 /**
  * Parses an XML file to construct a Scene object.
+ * Designed with modularity and Clean Code principles.
  */
 public class SceneXmlParser {
 
@@ -31,57 +33,12 @@ public class SceneXmlParser {
         Scene scene = new Scene(sceneName);
 
         try {
-            // Setup XML Document Builder
-            File xmlFile = new File(System.getProperty("user.dir") + "/" + filePath);
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(xmlFile);
-            doc.getDocumentElement().normalize();
-
-            // 1. Parse background color
+            Document doc = loadDocument(filePath);
             Element root = doc.getDocumentElement();
-            String bgColorStr = root.getAttribute("background-color");
-            if (!bgColorStr.isEmpty()) {
-                scene.setBackground(parseColor(bgColorStr));
-            }
 
-            // 2. Parse ambient light
-            NodeList ambientNodes = doc.getElementsByTagName("ambient-light");
-            if (ambientNodes.getLength() > 0) {
-                Element ambientEl = (Element) ambientNodes.item(0);
-                String colorStr = ambientEl.getAttribute("color");
-                if (!colorStr.isEmpty()) {
-                    scene.setAmbientLight(new AmbientLight(parseColor(colorStr)));
-                }
-            }
-
-            // 3. Parse geometries
-            NodeList geometriesNodes = doc.getElementsByTagName("geometries");
-            if (geometriesNodes.getLength() > 0) {
-                Element geometriesEl = (Element) geometriesNodes.item(0);
-                NodeList shapes = geometriesEl.getChildNodes();
-
-                for (int i = 0; i < shapes.getLength(); i++) {
-                    Node node = shapes.item(i);
-                    if (node.getNodeType() == Node.ELEMENT_NODE) {
-                        Element shapeEl = (Element) node;
-
-                        // Parse Sphere
-                        if (shapeEl.getNodeName().equals("sphere")) {
-                            Point center = parsePoint(shapeEl.getAttribute("center"));
-                            double radius = Double.parseDouble(shapeEl.getAttribute("radius"));
-                            scene.geometries.add(new Sphere(center, radius));
-                        }
-                        // Parse Triangle
-                        else if (shapeEl.getNodeName().equals("triangle")) {
-                            Point p0 = parsePoint(shapeEl.getAttribute("p0"));
-                            Point p1 = parsePoint(shapeEl.getAttribute("p1"));
-                            Point p2 = parsePoint(shapeEl.getAttribute("p2"));
-                            scene.geometries.add(new Triangle(p0, p1, p2));
-                        }
-                    }
-                }
-            }
+            parseBackgroundColor(root, scene);
+            parseAmbientLight(doc, scene);
+            parseGeometries(doc, scene);
 
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to parse XML file: " + e.getMessage(), e);
@@ -91,7 +48,92 @@ public class SceneXmlParser {
     }
 
     /**
-     * Helper method to convert a string of format "R G B" into a Color.
+     * Loads and normalizes the XML document from the file system.
+     */
+    private static Document loadDocument(String filePath) throws Exception {
+        File xmlFile = new File(System.getProperty("user.dir") + "/" + filePath);
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(xmlFile);
+        doc.getDocumentElement().normalize();
+        return doc;
+    }
+
+    /**
+     * Parses and sets the background color of the scene.
+     */
+    private static void parseBackgroundColor(Element root, Scene scene) {
+        String bgColorStr = root.getAttribute("background-color");
+        if (!bgColorStr.isEmpty()) {
+            scene.setBackground(parseColor(bgColorStr));
+        }
+    }
+
+    /**
+     * Parses and sets the ambient light of the scene.
+     */
+    private static void parseAmbientLight(Document doc, Scene scene) {
+        NodeList ambientNodes = doc.getElementsByTagName("ambient-light");
+        if (ambientNodes.getLength() > 0) {
+            Element ambientEl = (Element) ambientNodes.item(0);
+            String colorStr = ambientEl.getAttribute("color");
+            if (!colorStr.isEmpty()) {
+                scene.setAmbientLight(new AmbientLight(parseColor(colorStr), primitives.Double3.ONE));            }
+        }
+    }
+
+    /**
+     * Parses the geometries section and adds all shapes to the scene.
+     */
+    private static void parseGeometries(Document doc, Scene scene) {
+        NodeList geometriesNodes = doc.getElementsByTagName("geometries");
+        if (geometriesNodes.getLength() == 0) return;
+
+        Element geometriesEl = (Element) geometriesNodes.item(0);
+        NodeList shapes = geometriesEl.getChildNodes();
+
+        for (int i = 0; i < shapes.getLength(); i++) {
+            Node node = shapes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                scene.geometries.add(createGeometry((Element) node));
+            }
+        }
+    }
+
+    /**
+     * Factory method to create a specific Geometry object based on the XML tag name.
+     */
+    private static Geometry createGeometry(Element shapeEl) {
+        String shapeName = shapeEl.getNodeName();
+        return switch (shapeName) {
+            case "sphere" -> parseSphere(shapeEl);
+            case "triangle" -> parseTriangle(shapeEl);
+            // Easy to extend with more cases (e.g., polygon, cylinder) without changing the main flow
+            default -> throw new IllegalArgumentException("Unknown shape in XML: " + shapeName);
+        };
+    }
+
+    /**
+     * Parses a sphere element.
+     */
+    private static Sphere parseSphere(Element shapeEl) {
+        Point center = parsePoint(shapeEl.getAttribute("center"));
+        double radius = Double.parseDouble(shapeEl.getAttribute("radius"));
+        return new Sphere(center, radius);
+    }
+
+    /**
+     * Parses a triangle element.
+     */
+    private static Triangle parseTriangle(Element shapeEl) {
+        Point p0 = parsePoint(shapeEl.getAttribute("p0"));
+        Point p1 = parsePoint(shapeEl.getAttribute("p1"));
+        Point p2 = parsePoint(shapeEl.getAttribute("p2"));
+        return new Triangle(p0, p1, p2);
+    }
+
+    /**
+     * Helper method to convert a space-separated string of RGB values into a Color object.
      */
     private static Color parseColor(String colorStr) {
         String[] parts = colorStr.trim().split("\\s+");
@@ -99,7 +141,7 @@ public class SceneXmlParser {
     }
 
     /**
-     * Helper method to convert a string of format "X Y Z" into a Point.
+     * Helper method to convert a space-separated string of coordinates into a Point object.
      */
     private static Point parsePoint(String pointStr) {
         String[] parts = pointStr.trim().split("\\s+");

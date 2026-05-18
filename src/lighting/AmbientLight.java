@@ -1,34 +1,42 @@
 package lighting;
 
 import primitives.Color;
+import primitives.Double3;
 
 /**
- * Represents ambient light in a scene.
- * This light illuminates all objects equally, regardless of their position or orientation.
+ * Represents the ambient light in the scene.
+ * Ambient light is omnidirectional and has no specific source or position.
  */
-public class AmbientLight {
+public class AmbientLight extends Light {
 
-    /** Constant representing no ambient light (black color) */
-    public static final AmbientLight NONE = new AmbientLight(Color.BLACK);
-
-    /** The intensity of the ambient light */
-    private final Color intensity;
+    /** Constant representing no ambient light (pitch black) */
+    public static final AmbientLight NONE = new AmbientLight();
 
     /**
-     * Constructs an ambient light with the given intensity color.
+     * Constructor that calculates the final ambient light intensity.
+     * The intensity is scaled by the attenuation factor.
      *
-     * @param intensity the color intensity of the light
+     * @param ia the original light intensity (I_A)
+     * @param ka the ambient attenuation factor (k_A)
      */
-    public AmbientLight(Color intensity) {
-        this.intensity = intensity;
+    public AmbientLight(Color ia, Double3 ka) {
+        super(ia.scale(ka));
     }
 
     /**
-     * Gets the intensity of the ambient light.
-     *
-     * @return the intensity color
+     * Default constructor setting the ambient light to pitch black (no light).
      */
-    public Color getIntensity() {
-        return intensity;
+    public AmbientLight() {
+        super(Color.BLACK);
+    }
+
+    /**
+     * Constructor for backward compatibility with old tests.
+     * Sets the ambient light intensity without an explicit attenuation factor.
+     *
+     * @param ia the original light intensity (I_A)
+     */
+    public AmbientLight(Color ia) {
+        super(ia);
     }
 }
