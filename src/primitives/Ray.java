@@ -10,6 +10,8 @@ import static primitives.Util.*;
  * Class Ray represents a ray in 3D Cartesian coordinate system.
  */
 public final class Ray {
+    /** Small offset for secondary rays to avoid self intersection */
+    private static final double DELTA = 0.1;
 
     /**
      * Starting point of the ray.
@@ -30,6 +32,19 @@ public final class Ray {
     public Ray(Point origin, Vector direction) {
         this._origin = origin;
         this._direction = direction.normalize();
+    }
+
+    /**
+     * Constructor for secondary rays shifted slightly along the normal.
+     *
+     * @param origin starting point
+     * @param direction ray direction
+     * @param normal normal at the starting point
+     */
+    public Ray(Point origin, Vector direction, Vector normal) {
+        this._direction = direction.normalize();
+        double nv = alignZero(normal.dotProduct(this._direction));
+        this._origin = origin.add(normal.scale(nv > 0 ? DELTA : -DELTA));
     }
 
     /**

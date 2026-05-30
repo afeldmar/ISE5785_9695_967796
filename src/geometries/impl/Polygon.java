@@ -1,6 +1,7 @@
 package geometries.impl;
 
 import static primitives.Util.isZero;
+import static primitives.Util.alignZero;
 
 import java.util.List;
 
@@ -79,6 +80,33 @@ public class Polygon extends Geometry {
 
    @Override
    protected List<Intersection> calcIntersectionsHelper(Ray ray) {
-      return null;
+      var planeIntersections = _plane.calcIntersections(ray);
+      if (planeIntersections == null) return null;
+
+      Point  p0 = ray.origin();
+      Vector v  = ray.direction();
+      double sign = 0;
+
+      for (int i = 0; i < _size; i++) {
+         Point  p1 = _vertices.get(i);
+         Point  p2 = _vertices.get((i + 1) % _size);
+         Vector edgeNormal;
+
+         try {
+            edgeNormal = p1.subtract(p0).crossProduct(p2.subtract(p0)).normalize();
+         } catch (IllegalArgumentException e) {
+            return null;
+         }
+
+         double currentSign = alignZero(v.dotProduct(edgeNormal));
+         if (isZero(currentSign)) return null;
+         if (sign == 0) {
+            sign = currentSign;
+         } else if (sign * currentSign < 0) {
+            return null;
+         }
+      }
+
+      return List.of(new Intersection(this, planeIntersections.getFirst().point));
    }
 }

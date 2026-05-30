@@ -32,6 +32,10 @@ public class Material {
     public Double3 kD = Double3.ZERO;
     /** Specular attenuation factor */
     public Double3 kS = Double3.ZERO;
+    /** Transparency attenuation factor */
+    public Double3 kT = Double3.ZERO;
+    /** Reflection attenuation factor */
+    public Double3 kR = Double3.ZERO;
     /** Shininess factor (size of the specular highlight) */
     public int nShininess = 0;
 
@@ -77,6 +81,48 @@ public class Material {
     public Material setKS(double kS) {
         this.kS = new Double3(kS);
         return this;
+    }
+
+    /**
+     * Sets the transparency attenuation factor.
+     *
+     * @param kT the transparency attenuation factor
+     * @return the Material object itself for chaining
+     */
+    public Material setKT(Double3 kT) {
+        this.kT = kT;
+        return this;
+    }
+
+    /**
+     * Sets the transparency attenuation factor uniformly for all RGB components.
+     *
+     * @param kT the transparency attenuation factor
+     * @return the Material object itself for chaining
+     */
+    public Material setKT(double kT) {
+        return setKT(new Double3(kT));
+    }
+
+    /**
+     * Sets the reflection attenuation factor.
+     *
+     * @param kR the reflection attenuation factor
+     * @return the Material object itself for chaining
+     */
+    public Material setKR(Double3 kR) {
+        this.kR = kR;
+        return this;
+    }
+
+    /**
+     * Sets the reflection attenuation factor uniformly for all RGB components.
+     *
+     * @param kR the reflection attenuation factor
+     * @return the Material object itself for chaining
+     */
+    public Material setKR(double kR) {
+        return setKR(new Double3(kR));
     }
 
     /**
