@@ -36,6 +36,14 @@ public class Material {
     public Double3 kT = Double3.ZERO;
     /** Reflection attenuation factor */
     public Double3 kR = Double3.ZERO;
+    /** Reflection blur radius. Zero keeps ideal mirror reflection. */
+    public double kRBlur = 0.0;
+    /** Transparency blur radius. Zero keeps ideal clear transparency. */
+    public double kTBlur = 0.0;
+    /** Distance from secondary ray origin to the virtual blur target area. */
+    public double blurTargetDistance = 100.0;
+    /** Number of sample cells per axis for glossy/diffuse-glass beams. */
+    public int blurGridSize = 9;
     /** Shininess factor (size of the specular highlight) */
     public int nShininess = 0;
 
@@ -123,6 +131,62 @@ public class Material {
      */
     public Material setKR(double kR) {
         return setKR(new Double3(kR));
+    }
+
+    /**
+     * Sets the reflection blur radius for glossy surfaces.
+     *
+     * @param kRBlur radius of the virtual target area for reflected rays
+     * @return the Material object itself for chaining
+     */
+    public Material setKRBlur(double kRBlur) {
+        if (kRBlur < 0) {
+            throw new IllegalArgumentException("Reflection blur radius must be non-negative");
+        }
+        this.kRBlur = kRBlur;
+        return this;
+    }
+
+    /**
+     * Sets the transparency blur radius for diffuse glass.
+     *
+     * @param kTBlur radius of the virtual target area for refracted rays
+     * @return the Material object itself for chaining
+     */
+    public Material setKTBlur(double kTBlur) {
+        if (kTBlur < 0) {
+            throw new IllegalArgumentException("Transparency blur radius must be non-negative");
+        }
+        this.kTBlur = kTBlur;
+        return this;
+    }
+
+    /**
+     * Sets the distance from the secondary ray origin to the virtual target area.
+     *
+     * @param blurTargetDistance virtual target area distance
+     * @return the Material object itself for chaining
+     */
+    public Material setBlurTargetDistance(double blurTargetDistance) {
+        if (blurTargetDistance <= 0) {
+            throw new IllegalArgumentException("Blur target distance must be positive");
+        }
+        this.blurTargetDistance = blurTargetDistance;
+        return this;
+    }
+
+    /**
+     * Sets the number of sample cells per axis for glossy/diffuse-glass beams.
+     *
+     * @param blurGridSize number of sample cells per axis
+     * @return the Material object itself for chaining
+     */
+    public Material setBlurGridSize(int blurGridSize) {
+        if (blurGridSize < 1) {
+            throw new IllegalArgumentException("Blur grid size must be at least 1");
+        }
+        this.blurGridSize = blurGridSize;
+        return this;
     }
 
     /**

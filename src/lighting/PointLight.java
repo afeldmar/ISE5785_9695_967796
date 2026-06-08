@@ -70,7 +70,8 @@ public class PointLight extends Light implements LightSource {
         // Attenuation formula: I_0 / (kc + kl*d + kq*d^2)
         double attenuation = kC + kL * d + kQ * dSquared;
 
-        return super.getIntensity().scale(1d / attenuation);    }
+        return super.getIntensity().scale(1d / attenuation);
+    }
 
     @Override
     public Vector getL(Point p) {

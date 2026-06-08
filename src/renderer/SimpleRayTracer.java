@@ -4,9 +4,13 @@ import geometries.api.Intersectable;
 import geometries.api.Intersectable.Intersection;
 import primitives.Color;
 import primitives.Double3;
+import primitives.Material;
 import primitives.Ray;
+import primitives.TargetArea;
 import primitives.Vector;
 import scene.Scene;
+
+import java.util.List;
 
 import static primitives.Util.alignZero;
 
@@ -103,32 +107,63 @@ class SimpleRayTracer extends RayTracerBase {
      * @return global reflection and transparency color
      */
     private Color calcGlobalEffects(Intersectable.Intersection intersection, Ray ray, int level, Double3 k) {
-        return calcGlobalEffect(constructReflectedRay(intersection, ray), level, k, intersection.material.kR)
-                .add(calcGlobalEffect(constructRefractedRay(intersection, ray), level, k, intersection.material.kT));
+        Material material = intersection.material;
+        return calcGlobalEffect(constructReflectedRay(intersection, ray), material.kRBlur, material, level, k, material.kR)
+                .add(calcGlobalEffect(constructRefractedRay(intersection, ray), material.kTBlur, material, level, k, material.kT));
     }
 
     /**
-     * Calculates one recursive global effect.
+     * Calculates one recursive global effect after pruning insignificant effects.
      *
-     * @param ray   secondary ray
-     * @param level remaining recursion level
-     * @param k     accumulated attenuation
-     * @param kx    current effect attenuation
-     * @return effect color
+     * @param ray        ideal secondary ray
+     * @param blurRadius material blur radius
+     * @param material   material sampling parameters
+     * @param level      remaining recursion level
+     * @param k          accumulated attenuation
+     * @param kx         current effect attenuation
+     * @return averaged effect color
      */
-    private Color calcGlobalEffect(Ray ray, int level, Double3 k, Double3 kx) {
+    private Color calcGlobalEffect(Ray ray, double blurRadius, Material material, int level, Double3 k, Double3 kx) {
         Double3 kkx = k.product(kx);
-        if (kkx.isLowerThan(MIN_CALC_COLOR_K)) {
-            return Color.BLACK;
+        return kkx.isLowerThan(MIN_CALC_COLOR_K)
+                ? Color.BLACK
+                : calcGlobalEffect(constructBlurBeam(ray, blurRadius, material), level, kkx, kx);
+    }
+
+    /**
+     * Calculates one recursive global effect from a beam of secondary rays.
+     *
+     * @param rays  secondary ray beam
+     * @param level remaining recursion level
+     * @param kkx   accumulated attenuation including current effect
+     * @param kx    current effect attenuation
+     * @return averaged effect color
+     */
+    private Color calcGlobalEffect(List<Ray> rays, int level, Double3 kkx, Double3 kx) {
+        Color color = Color.BLACK;
+        for (Ray ray : rays) {
+            var intersections = scene.geometries.calcIntersections(ray);
+            color = color.add(intersections == null
+                    ? scene.background.scale(kx)
+                    : calcColor(ray.findClosestIntersection(intersections), ray, level - 1, kkx).scale(kx));
         }
 
-        var intersections = scene.geometries.calcIntersections(ray);
-        if (intersections == null) {
-            return scene.background.scale(kx);
-        }
+        return color.reduce(rays.size());
+    }
 
-        Intersection intersection = ray.findClosestIntersection(intersections);
-        return calcColor(intersection, ray, level - 1, kkx).scale(kx);
+    /**
+     * Builds a beam around an ideal secondary ray when blur is requested.
+     *
+     * @param ray        ideal reflected or refracted ray
+     * @param blurRadius material blur radius
+     * @param material   material sampling parameters
+     * @return single ideal ray or a sampled beam around it
+     */
+    private List<Ray> constructBlurBeam(Ray ray, double blurRadius, Material material) {
+        return blurRadius == 0
+                ? List.of(ray)
+                : new TargetArea().generateJittered(material.blurGridSize)
+                .constructBeam(ray, material.blurTargetDistance, blurRadius);
     }
 
     /**
