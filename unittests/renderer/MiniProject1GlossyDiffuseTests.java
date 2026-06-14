@@ -65,7 +65,7 @@ class MiniProject1GlossyDiffuseTests {
                     .setBlurTargetDistance(180.0)
                     .setBlurGridSize(2);
             glassOrnament
-                    .setKTBlur(3.0)
+                    .setKTBlur(1.0)
                     .setBlurTargetDistance(140.0)
                     .setBlurGridSize(2);
         }

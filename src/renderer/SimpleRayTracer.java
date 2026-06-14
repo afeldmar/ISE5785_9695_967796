@@ -5,12 +5,15 @@ import geometries.api.Intersectable.Intersection;
 import primitives.Color;
 import primitives.Double3;
 import primitives.Material;
+import primitives.Point;
 import primitives.Ray;
 import primitives.TargetArea;
 import primitives.Vector;
 import scene.Scene;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static primitives.Util.alignZero;
 
@@ -18,8 +21,6 @@ import static primitives.Util.alignZero;
  * Simple ray tracer.
  */
 class SimpleRayTracer extends RayTracerBase {
-    /** Maximal recursion level for global effects */
-    private static final int MAX_CALC_COLOR_LEVEL = 10;
     /** Minimal contribution considered significant */
     private static final double MIN_CALC_COLOR_K = 0.001;
     /** Initial accumulated attenuation */
@@ -49,7 +50,7 @@ class SimpleRayTracer extends RayTracerBase {
      * @return the calculated color
      */
     private Color calcColor(Intersectable.Intersection intersection, Ray ray) {
-        return calcColor(intersection, ray, MAX_CALC_COLOR_LEVEL, INITIAL_K)
+        return calcColor(intersection, ray, maxGlobalEffectsLevel, INITIAL_K)
                 .add(scene.ambientLight.getIntensity().scale(intersection.material.kA));
     }
 
@@ -127,6 +128,8 @@ class SimpleRayTracer extends RayTracerBase {
         Double3 kkx = k.product(kx);
         return kkx.isLowerThan(MIN_CALC_COLOR_K)
                 ? Color.BLACK
+                : blurRadius != 0 && adaptiveSuperSamplingLevel > 0
+                ? calcAdaptiveGlobalEffect(ray, blurRadius, material, level, kkx, kx)
                 : calcGlobalEffect(constructBlurBeam(ray, blurRadius, material), level, kkx, kx);
     }
 
@@ -165,6 +168,118 @@ class SimpleRayTracer extends RayTracerBase {
                 : new TargetArea().generateJittered(material.blurGridSize)
                 .constructBeam(ray, material.blurTargetDistance, blurRadius);
     }
+
+    /**
+     * Calculates a blurred global effect using adaptive super-sampling over the virtual target area.
+     *
+     * @param ray        ideal reflected or refracted ray
+     * @param blurRadius virtual target area radius
+     * @param material   material sampling parameters
+     * @param level      remaining color recursion level
+     * @param kkx        accumulated attenuation including current effect
+     * @param kx         current effect attenuation
+     * @return averaged adaptive color
+     */
+    private Color calcAdaptiveGlobalEffect(Ray ray, double blurRadius, Material material, int level,
+                                           Double3 kkx, Double3 kx) {
+        int gridSize = 1 << adaptiveSuperSamplingLevel;
+        Map<SamplePoint, Color> cache = new HashMap<>();
+
+        return calcAdaptiveGlobalArea(ray, blurRadius, material, level, kkx, kx,
+                0, 0, gridSize, gridSize, adaptiveSuperSamplingLevel, gridSize, cache);
+    }
+
+    /**
+     * Recursively samples one rectangular area of the virtual blur target.
+     *
+     * @return averaged color for the area
+     */
+    private Color calcAdaptiveGlobalArea(Ray ray, double blurRadius, Material material, int colorLevel,
+                                         Double3 kkx, Double3 kx, int x0, int y0, int x1, int y1,
+                                         int samplingLevel, int gridSize, Map<SamplePoint, Color> cache) {
+        Color topLeft = calcAdaptiveSample(ray, blurRadius, material, colorLevel, kkx, kx, x0, y0, gridSize, cache);
+        Color topRight = calcAdaptiveSample(ray, blurRadius, material, colorLevel, kkx, kx, x1, y0, gridSize, cache);
+        Color bottomLeft = calcAdaptiveSample(ray, blurRadius, material, colorLevel, kkx, kx, x0, y1, gridSize, cache);
+        Color bottomRight = calcAdaptiveSample(ray, blurRadius, material, colorLevel, kkx, kx, x1, y1, gridSize, cache);
+
+        if (samplingLevel == 0 || topLeft.equalColors(topRight, bottomLeft, bottomRight)) {
+            return topLeft.add(topRight, bottomLeft, bottomRight).reduce(4);
+        }
+
+        int xMid = (x0 + x1) / 2;
+        int yMid = (y0 + y1) / 2;
+
+        return calcAdaptiveGlobalArea(ray, blurRadius, material, colorLevel, kkx, kx,
+                x0, y0, xMid, yMid, samplingLevel - 1, gridSize, cache)
+                .add(calcAdaptiveGlobalArea(ray, blurRadius, material, colorLevel, kkx, kx,
+                                xMid, y0, x1, yMid, samplingLevel - 1, gridSize, cache),
+                        calcAdaptiveGlobalArea(ray, blurRadius, material, colorLevel, kkx, kx,
+                                x0, yMid, xMid, y1, samplingLevel - 1, gridSize, cache),
+                        calcAdaptiveGlobalArea(ray, blurRadius, material, colorLevel, kkx, kx,
+                                xMid, yMid, x1, y1, samplingLevel - 1, gridSize, cache))
+                .reduce(4);
+    }
+
+    /**
+     * Calculates or retrieves one cached adaptive sample.
+     */
+    private Color calcAdaptiveSample(Ray ray, double blurRadius, Material material, int level,
+                                     Double3 kkx, Double3 kx, int x, int y, int gridSize,
+                                     Map<SamplePoint, Color> cache) {
+        SamplePoint point = new SamplePoint(x, y);
+        Color cached = cache.get(point);
+        if (cached != null) {
+            return cached;
+        }
+
+        double xOffset = (double) x / gridSize * 2 - 1;
+        double yOffset = (double) y / gridSize * 2 - 1;
+        Color color = calcGlobalSample(constructBlurRay(ray, material.blurTargetDistance, blurRadius, xOffset, yOffset),
+                level, kkx, kx);
+        cache.put(point, color);
+        return color;
+    }
+
+    /**
+     * Calculates the color contribution of one secondary global-effect ray.
+     */
+    private Color calcGlobalSample(Ray ray, int level, Double3 kkx, Double3 kx) {
+        var intersections = scene.geometries.calcIntersections(ray);
+        return intersections == null
+                ? scene.background.scale(kx)
+                : calcColor(ray.findClosestIntersection(intersections), ray, level - 1, kkx).scale(kx);
+    }
+
+    /**
+     * Constructs one ray through an offset in the virtual blur target area.
+     */
+    private Ray constructBlurRay(Ray centralRay, double targetDistance, double blurRadius,
+                                 double xOffset, double yOffset) {
+        Point p0 = centralRay.origin();
+        Vector dir = centralRay.direction();
+        Point target = p0.add(dir.scale(targetDistance));
+
+        Vector vx;
+        Vector vUp = Vector.AXIS_Y;
+        if (dir.equals(vUp) || dir.equals(vUp.scale(-1))) {
+            vUp = Vector.AXIS_X;
+        }
+
+        try {
+            vx = dir.crossProduct(vUp).normalize();
+        } catch (IllegalArgumentException e) {
+            vx = Vector.AXIS_X;
+        }
+
+        Vector vy = dir.crossProduct(vx).normalize();
+        if (xOffset != 0) target = target.add(vx.scale(xOffset * blurRadius));
+        if (yOffset != 0) target = target.add(vy.scale(yOffset * blurRadius));
+
+        return new Ray(p0, target.subtract(p0).normalize());
+    }
+
+    /** Integer target-area coordinate used as an adaptive sample cache key. */
+    private record SamplePoint(int x, int y) {}
 
     /**
      * Calculates transparency toward the current light source.

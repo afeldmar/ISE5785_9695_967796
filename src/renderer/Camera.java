@@ -32,6 +32,11 @@ public class Camera implements Cloneable {
     private ImageWriter imageWriter;
     private RayTracerBase rayTracer;
 
+    /** Adaptive super-sampling recursion depth (0 = disabled) */
+    private int adaptiveSuperSamplingLevel = 0;
+    /** Maximal recursion level for global effects */
+    private int maxGlobalEffectsLevel = 10;
+
     /** 0 = no threads, -1 = parallel stream, -2 = auto raw threads, >0 = exact raw threads */
     private int threadsCount = 0;
     /** Spare threads if trying to use all the cores */
@@ -48,10 +53,23 @@ public class Camera implements Cloneable {
     }
 
     public Ray constructRay(int xIndex, int yIndex) {
+        return constructRay(xIndex, yIndex, 0, 0);
+    }
+
+    /**
+     * Constructs a ray through a specific location inside a pixel.
+     *
+     * @param xIndex pixel column
+     * @param yIndex pixel row
+     * @param xOffset horizontal offset inside the pixel, where -0.5 is left and 0.5 is right
+     * @param yOffset vertical offset inside the pixel, where -0.5 is top and 0.5 is bottom
+     * @return ray through the requested sub-pixel location
+     */
+    private Ray constructRay(int xIndex, int yIndex, double xOffset, double yOffset) {
         Point pIJ = vpCenter;
 
-        double xJ = (xIndex - (nX - 1) / 2d) * pixelWidth;
-        double yI = -(yIndex - (nY - 1) / 2d) * pixelHeight;
+        double xJ = (xIndex - (nX - 1) / 2d + xOffset) * pixelWidth;
+        double yI = -(yIndex - (nY - 1) / 2d + yOffset) * pixelHeight;
 
         if (xJ != 0) {
             pIJ = pIJ.add(vRight.scale(xJ));
@@ -135,8 +153,7 @@ public class Camera implements Cloneable {
      * @param yIndex pixel row
      */
     private void castRay(int xIndex, int yIndex) {
-        Ray ray = constructRay(xIndex, yIndex);
-        Color color = rayTracer.traceRay(ray);
+        Color color = rayTracer.traceRay(constructRay(xIndex, yIndex));
 
         imageWriter.writePixel(xIndex, yIndex, color);
 
@@ -216,6 +233,38 @@ public class Camera implements Cloneable {
             if (interval < 0)
                 throw new IllegalArgumentException("Interval value must be non-negative");
             camera.printInterval = interval;
+            return this;
+        }
+
+        /**
+         * Sets adaptive super-sampling recursion level.
+         *
+         * @param level 0 disables adaptive super-sampling, positive values enable it
+         * @return the builder object itself
+         */
+        public Builder setAdaptiveSuperSampling(int level) {
+            if (level < 0)
+                throw new IllegalArgumentException("Adaptive super-sampling level must be non-negative");
+            camera.adaptiveSuperSamplingLevel = level;
+            if (camera.rayTracer != null) {
+                camera.rayTracer.setAdaptiveSuperSampling(level);
+            }
+            return this;
+        }
+
+        /**
+         * Sets maximal recursion level for global effects such as reflection and transparency.
+         *
+         * @param level maximal recursion level, at least 1
+         * @return the builder object itself
+         */
+        public Builder setMaxGlobalEffectsLevel(int level) {
+            if (level < 1)
+                throw new IllegalArgumentException("Global effects recursion level must be at least 1");
+            camera.maxGlobalEffectsLevel = level;
+            if (camera.rayTracer != null) {
+                camera.rayTracer.setMaxGlobalEffectsLevel(level);
+            }
             return this;
         }
 
@@ -325,6 +374,8 @@ public class Camera implements Cloneable {
             if (camera.rayTracer == null) {
                 setRayTracer(new Scene("test"), RayTracerType.SIMPLE);
             }
+            camera.rayTracer.setAdaptiveSuperSampling(camera.adaptiveSuperSamplingLevel);
+            camera.rayTracer.setMaxGlobalEffectsLevel(camera.maxGlobalEffectsLevel);
 
             try {
                 return (Camera) camera.clone();

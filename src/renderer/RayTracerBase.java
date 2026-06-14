@@ -17,6 +17,10 @@ abstract class RayTracerBase {
      * The scene rendered by the ray tracer.
      */
     protected final Scene scene;
+    /** Adaptive super-sampling recursion level for ray beams (0 = disabled). */
+    protected int adaptiveSuperSamplingLevel = 0;
+    /** Maximal recursion level for global effects. */
+    protected int maxGlobalEffectsLevel = 10;
 
     /**
      * Constructor.
@@ -25,6 +29,34 @@ abstract class RayTracerBase {
      */
     RayTracerBase(Scene scene) {
         this.scene = scene;
+    }
+
+    /**
+     * Sets adaptive super-sampling recursion level for ray beams.
+     *
+     * @param level 0 disables adaptive super-sampling, positive values enable it
+     * @return this ray tracer
+     */
+    RayTracerBase setAdaptiveSuperSampling(int level) {
+        if (level < 0) {
+            throw new IllegalArgumentException("Adaptive super-sampling level must be non-negative");
+        }
+        adaptiveSuperSamplingLevel = level;
+        return this;
+    }
+
+    /**
+     * Sets maximal recursion level for global effects.
+     *
+     * @param level maximal recursion level, at least 1
+     * @return this ray tracer
+     */
+    RayTracerBase setMaxGlobalEffectsLevel(int level) {
+        if (level < 1) {
+            throw new IllegalArgumentException("Global effects recursion level must be at least 1");
+        }
+        maxGlobalEffectsLevel = level;
+        return this;
     }
 
     /**
